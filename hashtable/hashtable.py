@@ -24,6 +24,7 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity
         self.storage = [None] * capacity
+        self.load = 0
 
     def get_num_slots(self):
         """
@@ -35,7 +36,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return self.capacity
 
     def get_load_factor(self):
         """
@@ -43,7 +44,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return self.load / self.capacity
 
     def fnv1(self, key):
         """
@@ -85,8 +86,12 @@ class HashTable:
         index = self.hash_index(key)
         entry = HashTableEntry(key, value)
 
-        # if self.storage[index] == None:
-        self.storage[index] = entry
+        if self.storage[index] == None or key == self.storage[index].key:
+            self.storage[index] = entry
+        else:
+            old_entry = self.storage[index]
+            old_entry.next = entry
+        self.load += 1
 
     def delete(self, key):
         """
@@ -97,11 +102,17 @@ class HashTable:
         Implement this.
         """
         index = self.hash_index(key)
-        entry = HashTableEntry(key, None)
-        if self.storage[index] is not None:
-            self.storage[index] = entry
+        entry = self.storage[index]
+        if entry.key == key:
+            if entry.next is None:
+                self.storage[index] = None
+            else:
+                self.storage[index] = entry.next
         else:
-            print("key not found")
+            if entry.next is not None:
+                if entry.next.key == key:
+                    entry.next = None
+        self.load -= 1
 
     def get(self, key):
         """
@@ -112,8 +123,29 @@ class HashTable:
         Implement this.
         """
         index = self.hash_index(key)
+        value = None
         entry = self.storage[index]
-        return entry.value
+
+        while entry is not None and entry.key != key and entry.next is not None:
+            if entry.key == key:
+                value = entry.value
+            else:
+                entry = entry.next
+        if entry is not None and entry.key == key:
+            value = entry.value
+        return value
+
+    def get_next(self, key):
+        """
+        Retrieve the value stored with the given key.
+
+        Returns None if the key is not found.
+
+        Implement this.
+        """
+        index = self.hash_index(key)
+        entry = self.storage[index]
+        return entry.next.value
 
     def resize(self, new_capacity):
         """
@@ -122,7 +154,16 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        if self.get_load_factor() > 0.7:
+            self.capacity = new_capacity
+            old_list = self.storage
+            self.storage = [None] * self.capacity
+
+            for entry in old_list:
+                while entry.next is not None:
+                    self.put(entry.key, entry.value)
+                    entry = entry.next
+                self.put(entry.key, entry.value)
 
 
 if __name__ == "__main__":
@@ -143,6 +184,7 @@ if __name__ == "__main__":
 
     print("")
 
+    # print('self.storage', ht.storage)
     # print(ht.hash_index("ignacio3"))
     # print(ht.get("line_12"))
     # print("capacity", ht.capacity)

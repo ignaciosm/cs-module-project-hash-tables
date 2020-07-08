@@ -121,6 +121,8 @@ class TestHashTable(unittest.TestCase):
         return_value = ht.get("key-9")
         self.assertTrue(return_value == "val-9")
 
+        print('load', ht.load)
+        print('load_factor', ht.load_factor)
         ht.delete("key-7")
         ht.delete("key-6")
         ht.delete("key-5")
@@ -158,6 +160,7 @@ class TestHashTable(unittest.TestCase):
         self.assertTrue(return_value is None)
         return_value = ht.get("key-9")
         self.assertTrue(return_value is None)
+
 
 if __name__ == '__main__':
     unittest.main()
